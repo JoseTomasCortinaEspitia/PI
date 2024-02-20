@@ -1,12 +1,24 @@
+//para poder usar las variables de entorno
 require('dotenv').config();
+
+//se importa la clase Sequelize
 const { Sequelize } = require('sequelize');
+
+
 const fs = require('fs');
 const path = require('path');
-const {
-  DB_USER, DB_PASSWORD, DB_HOST,
-} = process.env;
 
-const sequelize = new Sequelize(`postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/dogs`, {
+//me importo las variables de entorno
+const {
+  DB_USER, DB_PASSWORD, DB_HOST, PORT
+} = process.env; 
+
+//Importo los modelos
+// const DogFunction = require('./models/Dog');
+// const TemperamentFunction = require('./models/Temperament');
+
+//Vamos a crear la conexión a la base de datos
+const sequelize = new Sequelize(`postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${PORT}/dogs`, {
   logging: false, // set to console.log to see the raw SQL queries
   native: false, // lets Sequelize know we can use pg-native for ~30% more speed
 });
@@ -28,14 +40,23 @@ let entries = Object.entries(sequelize.models);
 let capsEntries = entries.map((entry) => [entry[0][0].toUpperCase() + entry[0].slice(1), entry[1]]);
 sequelize.models = Object.fromEntries(capsEntries);
 
+
 // En sequelize.models están todos los modelos importados como propiedades
 // Para relacionarlos hacemos un destructuring
-const { Dog } = sequelize.models;
+const { Dog, Temperament } = sequelize.models;
 
 // Aca vendrian las relaciones
 // Product.hasMany(Reviews);
+// Aca vendrian las relaciones, muchos a muchos N:N
+//un perro puede tener muchos temperamentos 
+Dog.belongsToMany(Temperament, {through: "dog_temperament"});
+//y un temperamento puede estar en muchos perros
+Temperament.belongsToMany(Dog, {through: "dog_temperament"});
+
+
 
 module.exports = {
-  ...sequelize.models, // para poder importar los modelos así: const { Product, User } = require('./db.js');
-  conn: sequelize,     // para importart la conexión { conn } = require('./db.js');
+  ...sequelize.models, // exportamos los modelos, para poder importarlos 
+  conn: sequelize,     // Exportamos la instancia de Sequelize(sequelize) como una propiedad de conn, 
+                      //para luego importar la conexión { conn } = require('./db.js'); en el index.js
 };

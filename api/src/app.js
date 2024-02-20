@@ -1,12 +1,18 @@
+//aca se monta el servidor con express y se exporta para ser escuchado desde index.js
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const morgan = require('morgan');
-const routes = require('./routes/index.js');
+const morgan = require('morgan');//morgan me permite ver en el console las peticiones entrantes
+const routes = require('./routes/index.js'); //se modularizan las rutas
 
-require('./db.js');
+require('./db.js'); //requerir un modulo de esta manera hace que se ejecute
 
 const server = express();
+
+//estos son Middlewares 
+server.use(morgan('dev'));//morgan es para ver la peticiones(get,post, etc) en consola.
+server.use(express.json());//express.json() es para que la api se pueda leer los datos
+
 
 server.name = 'API';
 
